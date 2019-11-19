@@ -16,12 +16,13 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-        title: 'Myspecialoperations',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-        ),
-        home: MyHomePage(title: 'LoginPage'),
-        onGenerateRoute: onGenerateRoute);
+      title: 'Myspecialoperations',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: MyHomePage(title: 'LoginPage'),
+      onGenerateRoute: onGenerateRoute
+    );
   }
 }
 
@@ -33,140 +34,247 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-    _MyHomePageState() {
-    requestPermission();
-  }
+  GlobalKey<FormState> _formKey = GlobalKey();
+  var _isShowClear = false;
+  var _isShowPwd = false;
+  FocusNode _focusNodeUserName = new FocusNode();
+  FocusNode _focusNodePassWord = new FocusNode();
   String USERS_TZRY = "users_tzry";
   String USERS_COMPANY = "users_company";
   String user = 'users_tzry';
-  String inputInfo = "身份证/手机号码";
+  String inputInfo = "请输入身份证或手机号码";
   var usernameController = new TextEditingController();
   var pwdController = new TextEditingController();
   String username;
   String pwd;
+  String token;
 
   XmlDocument responseXML;
-  String token;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      body: Container(
-        child: ListView(
-          children: <Widget>[
-            Center(
-              child: Container(
-                height: 150,
-                width: 150,
-                child: Image.asset(
-                  "images/avatar.png",
-                  fit: BoxFit.cover,
-                ),
-              ),
-            ),
-            SizedBox(
-              height: 20,
-            ),
-            Row(
+      body: GestureDetector(
+        onTap: () {
+          print("空白区域");
+          _focusNodePassWord.unfocus();
+          _focusNodeUserName.unfocus();
+        },
+        child: Container(
+          child: Form(
+            key: _formKey,
+            child: ListView(
               children: <Widget>[
-                Expanded(
-                  child: RadioListTile<String>(
-                    value: this.USERS_TZRY,
-                    title: Text('特种人员', style: TextStyle(fontSize: 15)),
-                    groupValue: this.user,
-                    activeColor: Colors.blue,
-                    onChanged: (value) {
-                      setState(() {
-                        this.user = value;
-                        this.inputInfo = "身份证/手机号码";
-                      });
-                    },
+                Center(
+                  child: Container(
+                    height: 100,
+                    width: 100,
+                    child: Image.asset(
+                      "images/avatar.png",
+                      fit: BoxFit.cover,
+                    ),
                   ),
                 ),
-                Expanded(
-                  child: RadioListTile<String>(
-                    value: this.USERS_COMPANY,
-                    title: Text('企业', style: TextStyle(fontSize: 15)),
-                    groupValue: this.user,
-                    activeColor: Colors.blue,
-                    onChanged: (value) {
-                      setState(() {
-                        this.user = value;
-                        this.inputInfo = "企业用户名";
-                      });
-                    },
+                SizedBox(
+                  height: 20,
+                ),
+                Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: RadioListTile<String>(
+                        value: this.USERS_TZRY,
+                        title: Text('特种人员', style: TextStyle(fontSize: 15)),
+                        groupValue: this.user,
+                        activeColor: Colors.blue,
+                        onChanged: (value) {
+                          setState(() {
+                            this.user = value;
+                            this.inputInfo = "身份证/手机号码";
+                          });
+                        },
+                      ),
+                    ),
+                    Expanded(
+                      child: RadioListTile<String>(
+                        value: this.USERS_COMPANY,
+                        title: Text('企业', style: TextStyle(fontSize: 15)),
+                        groupValue: this.user,
+                        activeColor: Colors.blue,
+                        onChanged: (value) {
+                          setState(() {
+                            this.user = value;
+                            this.inputInfo = "请输入企业名称";
+                          });
+                        },
+                      ),
+                    ),
+                  ],
+                ),
+                TextFormField(
+                  controller: usernameController,
+                  keyboardType: TextInputType.number,
+                  focusNode: _focusNodeUserName,
+                  decoration: InputDecoration(
+                    labelText: "用户名",
+                    hintText: '${this.inputInfo}',
+                    prefixIcon: Icon(Icons.person),
+                    suffixIcon: (_isShowClear)
+                        ? IconButton(
+                            icon: Icon(Icons.clear),
+                            onPressed: () {
+                              usernameController.clear();
+                            },
+                          )
+                        : null,
                   ),
+                  validator: validateUserName,
+                ),
+                // inputText(
+                //   text: '${this.inputInfo}',
+                //   password: false,
+                //   controller: usernameController,
+                // ),
+                SizedBox(
+                  height: 10,
+                ),
+                TextFormField(
+                  controller: pwdController,
+                  focusNode: _focusNodePassWord,
+                  decoration: InputDecoration(
+                      labelText: "密码",
+                      hintText: "请输入密码",
+                      prefixIcon: Icon(Icons.lock),
+                      suffixIcon: IconButton(
+                        icon: Icon((_isShowPwd)
+                            ? Icons.visibility
+                            : Icons.visibility_off),
+                        // 点击改变显示或隐藏密码
+                        onPressed: () {
+                          setState(() {
+                            _isShowPwd = !_isShowPwd;
+                          });
+                        },
+                      )),
+                  obscureText: !_isShowPwd,
+                  validator: validatePassWord,
+                ),
+                // inputText(
+                //   text: "用户密码",
+                //   password: true,
+                //   controller: pwdController,
+                // ),
+                SizedBox(
+                  height: 10,
+                ),
+                Container(
+                  child: Stack(
+                    children: <Widget>[
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: InkWell(
+                          onTap: () {
+                            Navigator.pushNamed(context, '/forgetPass');
+                          },
+                          child: Text('找回密码', style: TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: InkWell(
+                          onTap: () {
+                            if (this.user == this.USERS_TZRY) {
+                              Navigator.pushNamed(context, '/registerFirst');
+                            } else if (this.user == this.USERS_COMPANY) {
+                              Navigator.pushNamed(context, '/comRegisterPage');
+                            }
+                          },
+                          child: Text('新用户注册', style: TextStyle(fontSize: 16)),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(
+                  height: 10,
+                ),
+                CupertinoButton(
+                  child: Text('登录'),
+                  color: Colors.blue,
+                  onPressed: () {
+                    _focusNodePassWord.unfocus();
+                    _focusNodeUserName.unfocus();
+                    if (_formKey.currentState.validate()) {
+                      //只有输入通过验证，才会执行这里
+                      //todo 登录操作
+                      print("账号：" + usernameController.text);
+                      print("密码：" + pwdController.text);
+                      Login();
+                    }
+                  },
                 ),
               ],
             ),
-            inputText(
-              text: '${this.inputInfo}',
-              password: false,
-              controller: usernameController,
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            inputText(
-              text: "用户密码",
-              password: true,
-              controller: pwdController,
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            Container(
-              child: Stack(
-                children: <Widget>[
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: InkWell(
-                      onTap: () {
-                        Navigator.pushNamed(context, '/forgetPass');
-                      },
-                      child: Text('找回密码', style: TextStyle(fontSize: 16)),
-                    ),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: InkWell(
-                      onTap: () {
-                        if (this.user == this.USERS_TZRY) {
-                          Navigator.pushNamed(context, '/registerFirst');
-                        } else if (this.user == this.USERS_COMPANY) {
-                          Navigator.pushNamed(context, '/comRegisterPage');
-                        }
-                      },
-                      child: Text('新用户注册', style: TextStyle(fontSize: 16)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            SizedBox(
-              height: 10,
-            ),
-            CupertinoButton(
-              child: Text('登录'),
-              color: Colors.blue,
-              onPressed: () {
-                Login();
-                
-              },
-            ),
-          ],
+          ),
+          padding: EdgeInsets.all(30),
         ),
-        padding: EdgeInsets.all(30),
       ),
     );
+  }
+
+  String validateUserName(value) {
+    // 正则匹配手机号
+    RegExp phoneExp = RegExp(
+        r'^((13[0-9])|(14[0-9])|(15[0-9])|(16[0-9])|(17[0-9])|(18[0-9])|(19[0-9]))\d{8}$');
+    RegExp idCardExp =RegExp(r'^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$');
+    /*
+    注释：编码规则顺序从左至右依次为6位数字地址码，8位数字出生年份日期码，3位数字顺序码，1位数字校验码（可为x）。
+
+[1-9]\d{5}                 前六位地区，非0打头
+
+(18|19|([23]\d))\d{2}      出身年份，覆盖范围为 1800-3999 年
+
+((0[1-9])|(10|11|12))      月份，01-12月
+
+(([0-2][1-9])|10|20|30|31) 日期，01-31天
+
+\d{3}[0-9Xx]：              顺序码三位 + 一位校验码
+    */
+
+    if (value.isEmpty) {
+      return '用户名不能为空!';
+    } else if (value.length==11) {
+      if(!phoneExp.hasMatch(value)){
+      return '请输入正确手机号';
+      }else{
+        return null;
+      }
+      
+    }else if(value.length==18){
+      if(!idCardExp.hasMatch(value)){
+      return '请输入正确身份证号码';
+      }else{
+        return null;
+      }
+    }else{
+      return '请输入正确身份证号码或者手机号';
+    }
+  }
+
+  String validatePassWord(value) {
+    if (value.isEmpty) {
+      return '密码不能为空';
+    } else if (value.trim().length <= 6) {
+      return '密码长度不正确';
+    }
+    return null;
   }
 
   Future<void> Login() async {
     username = usernameController.text;
     pwd = pwdController.text;
-    await postLogin();
+    //await postLogin();
   }
 
   Future<void> postLogin() async {
