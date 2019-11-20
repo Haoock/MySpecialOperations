@@ -24,6 +24,7 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
   final passWordController = TextEditingController();
   final usernameController = TextEditingController();
   final phonenumController = TextEditingController();
+  final conformPasswordController=TextEditingController();
   Character _character = Character.man;
   static const platform =
       const MethodChannel('samples.flutter.dev/myspecialoperations');
@@ -40,6 +41,11 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
   File _image9;
   String username;
   Map data = Map();
+  Color idcolor;
+  Color namecolor;
+  Color pswcolor;
+  Color confirmpswcolor;
+  Color phonecolor;
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -47,9 +53,7 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
         centerTitle: true,
         title: Text("注册"),
       ),
-      body: Form(
-        key: _formKey,
-        child: ListView(
+      body: ListView(
           children: <Widget>[
             Container(
               child: Container(
@@ -67,9 +71,7 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
               child: Row(
                 children: <Widget>[
                   Text("证件类型："),
-                  Container(
-                    width: 280,
-                    child: TextField(
+                  Container(width: 280,child: TextField(
                       obscureText: true,
                       decoration: InputDecoration(
                           hintText: "中国居民身份证",
@@ -78,8 +80,7 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
                           hintStyle: TextStyle(
                               fontWeight: FontWeight.w200,
                               color: Colors.black)),
-                    ),
-                  )
+                    ),)
                 ],
               ),
             ),
@@ -120,15 +121,14 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
               margin: EdgeInsets.only(left: 8),
               child: Row(
                 children: <Widget>[
-                  Text("证件号码："),
+                  Text("证件号码：",style: TextStyle(color: this.idcolor),),
                   Container(
                     width: 280,
-                    child: TextFormField(
+                    child: TextField(
                         controller: idCardController,
                         obscureText: false,
                         decoration: InputDecoration(
-                            hintText: "请输入证件号码", border: InputBorder.none),
-                        validator: validateIdCardNum,
+                            hintText: "请输入证件号码", border: InputBorder.none,),
                       )
                   )
                 ],
@@ -141,7 +141,7 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
               margin: EdgeInsets.only(left: 8),
               child: Row(
                 children: <Widget>[
-                  Text("   姓  名："),
+                  Text("   姓  名：",style: TextStyle(color: this.namecolor),),
                   Container(
                     width: 280,
                     child: TextFormField(
@@ -149,7 +149,6 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
                       obscureText: false,
                       decoration: InputDecoration(
                           hintText: "请输入真实姓名", border: InputBorder.none),
-                      validator: validatePersonName,
                     ),
                   )
                 ],
@@ -198,16 +197,15 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
               margin: EdgeInsets.only(left: 8),
               child: Row(
                 children: <Widget>[
-                  Text("   密  码 ："),
+                  Text("   密  码 ：",style: TextStyle(color: this.pswcolor),),
                   Container(
                     width: 280,
                     child: TextFormField(
                       controller: passWordController,
                       obscureText: true,
                       decoration: InputDecoration(
-                          hintText: "不少于8位",
+                          hintText: "请输入6-20位密码(包含数字和英文)",
                           border: InputBorder.none),
-                      validator: validatePassword,
                     ),
                   )
                 ],
@@ -220,14 +218,14 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
               margin: EdgeInsets.only(left: 8),
               child: Row(
                 children: <Widget>[
-                  Text("确认密码："),
+                  Text("确认密码：",style: TextStyle(color: this.confirmpswcolor),),
                   Container(
                     width: 280,
                     child: TextFormField(
+                      controller: conformPasswordController,
                       obscureText: true,
                       decoration: InputDecoration(
                           hintText: "请再次输入密码", border: InputBorder.none),
-                      validator: conformPassword,
                     ),
                   )
                 ],
@@ -256,15 +254,15 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
               margin: EdgeInsets.only(left: 8),
               child: Row(
                 children: <Widget>[
-                  Text("手机号码(+86)："),
+                  Text("手机号码(+86)：",style: TextStyle(color: this.phonecolor),),
                   Container(
                     width: 248,
                     child: TextFormField(
+                      keyboardType: TextInputType.number,
                       controller: phonenumController,
                       obscureText: false,
                       decoration: InputDecoration(
                           hintText: "请准确填写您的手机号", border: InputBorder.none),
-                      validator: validatePhoneNum,
                     ),
                   )
                 ],
@@ -613,15 +611,17 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
                 text: "下一步",
                 color: Colors.blue,
                 cb: () {
-                  if (_formKey.currentState.validate()) {
-                    print("登录成功1111");
+                    validateAll();
+                    setState(() {
+                    });
+                    
                     // if(_image1!=null){
                     // _provideDatas2();
                     // }else{
                     //   Toast.show("请拍摄人脸照片", context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
                     // }
 
-                  }
+                  
 
                   // if(this.photoPath!=null){
 
@@ -636,7 +636,6 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
             )
           ],
         ),
-      ),
     );
   }
 
@@ -649,6 +648,54 @@ class _RegisterFirstPageState extends State<RegisterFirstPage> {
   //     print(e);
   //   }
   // }
+    bool validateAll(){
+    String tempId=validateIdCardNum(idCardController.text);
+    String tempname=validatePersonName(usernameController.text);
+    String temppsw=validatePassword(passWordController.text);
+    String tempConfirmpas=conformPassword(conformPasswordController.text);
+    String tempPhonenum=validatePhoneNum(phonenumController.text);
+    // if(this.photoPath==null){
+
+    // }
+    if(tempPhonenum!=null){
+      this.phonecolor=Colors.red;
+      Toast.show(tempPhonenum, context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+    }else{
+      this.phonecolor=Colors.black;
+    }
+
+    if(tempConfirmpas!=null){
+      this.confirmpswcolor=Colors.red;
+      Toast.show(tempConfirmpas, context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+    }else{
+      this.confirmpswcolor=Colors.black;
+    }
+
+    if(temppsw!=null){
+      this.pswcolor=Colors.red;
+      Toast.show(temppsw, context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+    }else{
+      this.pswcolor=Colors.black;
+    }
+
+    if(tempname!=null){
+      this.namecolor=Colors.red;
+      Toast.show(tempname, context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+    }else{
+      this.namecolor=Colors.black;
+    }
+
+    if(tempId!=null){
+      this.idcolor=Colors.red;
+      Toast.show(tempId, context, duration: Toast.LENGTH_SHORT, gravity:  Toast.BOTTOM);
+    }else{
+      this.idcolor=Colors.black;
+    }
+
+
+
+    return true;
+  }
   String validateIdCardNum(value) {
     print("这是身份证的号码"+value);
     RegExp idCardExp = RegExp(
