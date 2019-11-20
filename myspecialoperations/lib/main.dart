@@ -224,7 +224,6 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   String validateUserName(value) {
-    // 正则匹配手机号
     RegExp phoneExp = RegExp(
         r'^((13[0-9])|(14[0-9])|(15[0-9])|(16[0-9])|(17[0-9])|(18[0-9])|(19[0-9]))\d{8}$');
     RegExp idCardExp =RegExp(r'^[1-9]\d{5}(18|19|([23]\d))\d{2}((0[1-9])|(10|11|12))(([0-2][1-9])|10|20|30|31)\d{3}[0-9Xx]$');
@@ -246,14 +245,14 @@ class _MyHomePageState extends State<MyHomePage> {
       return '用户名不能为空!';
     } else if (value.length==11) {
       if(!phoneExp.hasMatch(value)){
-      return '请输入正确手机号';
+      return '请输入正确的手机号';
       }else{
         return null;
       }
       
     }else if(value.length==18){
       if(!idCardExp.hasMatch(value)){
-      return '请输入正确身份证号码';
+      return '请输入正确的身份证号码';
       }else{
         return null;
       }
@@ -265,7 +264,7 @@ class _MyHomePageState extends State<MyHomePage> {
   String validatePassWord(value) {
     if (value.isEmpty) {
       return '密码不能为空';
-    } else if (value.trim().length <= 6) {
+    } else if (value.trim().length < 8) {
       return '密码长度不正确';
     }
     return null;
